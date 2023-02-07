@@ -24,7 +24,6 @@ int ActiveDirectory(char *filePath) {
         // File path is invalid
         return 1;
     }
-    //closedir(filePath);
 }
 
 int indent = 0;
@@ -66,7 +65,7 @@ void ScanDirectory(char *filePath) {
             if (strcmp(stream->d_name, ".") != 0 && strcmp(stream->d_name, "..") != 0) {
                 // Print the indent(s)
                 for (int i=0; i<indent; i++) {
-                    printf("\t");
+                    printf(INDENT);
                 }
 
                 // Increment the indent amount
@@ -86,7 +85,7 @@ void ScanDirectory(char *filePath) {
 
             // Print the indent(s)
             for (int i=0; i<indent; i++) {
-                printf("\t");
+                printf(INDENT);
             }
             printf("%s (%ld bytes)\n", stream->d_name, stats.st_size);
         }
@@ -100,6 +99,13 @@ void ScanDirectory(char *filePath) {
     closedir(dir);
 }
 
+/**
+ * Recursively checks the file path's contents and displays 
+ * if the directory chain of the file if it is found.
+ * 
+ * @param   *filePath   Pointer to the filePath String
+ * @param   *fileName   Pointer to the fileName String
+*/
 void MatchFiles(char *filePath, char *fileName) {
     // Create directory stream and stat struct
     DIR *dir;
@@ -129,16 +135,19 @@ void MatchFiles(char *filePath, char *fileName) {
         if (S_ISDIR(stats.st_mode)) {
             // It's a directory
             if (strcmp(stream->d_name, ".") != 0 && strcmp(stream->d_name, "..") != 0) {
-                // Check if this directory has the desired file
+
+                // Check if the directory has the file
                 char *checkPath = malloc(strlen(newPath) + strlen(fileName) + 2);
+
                 strcpy(checkPath, newPath);
                 strcat(checkPath, "/");
                 strcat(checkPath, fileName);
 
-                if (access(checkPath, F_OK) != -1) {
+                // Check if the file exists
+                if (stat(checkPath, &stats) == 0) {
                     // Print the indent(s)
                     for (int i=0; i<indent; i++) {
-                        printf("\t");
+                        printf(INDENT);
                     }
 
                     // Increment the indent amount
@@ -147,28 +156,27 @@ void MatchFiles(char *filePath, char *fileName) {
                     // Print the directory
                     printf("%s/ (Directory)\n", stream->d_name);
 
-                    // Recursively scan again until NULL
+                    // Recursively search again until NULL
                     MatchFiles(newPath, fileName);
 
                     // Decrement the indent amount
                     indent--;
                 } else {
-                    // Recursively scan the subdirectory
+                    // Recursively search the subdirectory
                     MatchFiles(newPath, fileName);
                 }
 
-                
                 // Free the checkPath memory
                 free(checkPath);
             }
         } else if (S_ISREG(stats.st_mode)) {
             // It's a file
 
-            // Check if it's the desired file
+            // Check if the file matches the input name
             if (strcmp(stream->d_name, fileName) == 0) {
                 // Print the indent(s)
                 for (int i=0; i<indent; i++) {
-                    printf("\t");
+                    printf(INDENT);
                 }
                 printf("%s (%ld bytes)\n", stream->d_name, stats.st_size);
             }
