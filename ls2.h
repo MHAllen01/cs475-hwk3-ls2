@@ -8,5 +8,8 @@
 #define INDENT "    "
 
 // TODO: Function declarations here for ls2
+int ActiveDirectory(char *filePath);
+void ScanDirectory(char *filePath);
+void MatchFiles(char *filePath, char *fileName);
 
 #endif
